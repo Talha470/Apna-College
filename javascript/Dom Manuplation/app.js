@@ -1,0 +1,17 @@
+let input = document.createElement('input');
+let btn = document.createElement('button');
+btn.innerText= "Click me";
+let body = document.querySelector('body');
+body.append(input);
+body.append(btn);
+input.placeholder="Username";
+btn.style.backgroundColor='blue';
+btn.style.color='white';
+let h1 = document.createElement('h1');
+h1.innerText="Dom Practice";
+body.append(h1);
+h1.style.color="purple";
+h1.style.textDecoration="underline";
+let p = document.createElement('p');
+p.innerHTML=("Apna College <b>Delta</b> Practice");
+body.append(p);

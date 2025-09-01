@@ -1,0 +1,41 @@
+.Parent {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr); /* 12 columns */
+  grid-template-rows: repeat(12, 1fr);   /* 12 rows */
+  gap: 5px; /* Optional for spacing */
+}
+
+#1122 {
+  background-color: darkcyan;
+  grid-column: 1 / span 12; /* Occupy all 12 columns */
+}
+
+#1123 {
+  background-color: brown;
+  grid-column: 1 / span 3; /* Occupy first 3 columns */
+  grid-row: 2 / span 10; /* Occupy rows 2-12 */
+}
+
+#1124 {
+  background-color: blue;
+  grid-column: 4 / span 9; /* Start at column 4, span 9 columns */
+ /* Occupy rows 2-3 */
+}
+
+#1125 {
+  background-color: azure;
+  grid-column: 10/ span 3; /* Start at column 4, span 3 columns */
+  grid-row: 2 / span 10; /* Occupy rows 4-7 */
+}
+
+#1126 {
+  background-color: aquamarine;
+  grid-column: 4 / span 6; /* Start at column 7, span 6 columns */
+  grid-row: 3 / span 9; /* Occupy rows 4-12 */
+}
+
+#1127 {
+  background-color: antiquewhite;
+  grid-column: 1 / span 12; /* Occupy all 12 columns */
+  grid-row: 1 / span 12; /* Occupy the last row */
+}
