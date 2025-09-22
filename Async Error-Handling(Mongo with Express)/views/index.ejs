@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whatsapp Chats</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h2>📱 WhatsApp Chats</h2>
+    <form method="GET" action="/chats/new">
+      <button type="submit" class=" header-button">+ New Chat</button>
+    </form>
+  </header>
+
+  <div class="chat-container">
+    <% for (let chat of chats) { %>
+      <div class="chat-card">
+        <div class="chat-meta">
+          <span class="from">From: <strong><%= chat.from %></strong></span>
+          <span class="to">To: <strong><%= chat.to %></strong></span>
+        </div>
+        <div class="chat-bubble">
+          <%= chat.msg %>
+        </div>
+        <div style="display: flex; width: 100%; justify-content: space-between;">
+          <div style="display: flex; gap: 5px;">
+            <form action="/chats/<%= chat.id %>/edit" method="GET">
+              <button type="submit" class="header-button">Edit</button>
+            </form>
+            <form action="/chats/<%= chat.id %>/delete?_method=DELETE" method="POST">
+              <button type="submit" class="header-button">Delete</button>
+            </form>
+            <form action="/chats/<%= chat.id %>" method="GET">
+              <button type="submit" class="header-button">Get</button>
+            </form>
+          </div>
+        <div class="timestamp">
+          <% if (chat.updated_at) { %>
+            
+            Updated <%= chat.updated_at.toString().split(" ")[4] %>
+            <br>
+            <%= chat.updated_at.toString().split(" ").slice(0, 4).join("-") %>
+          <% } else { %>
+            Send <%= chat.created_at.toString().split(" ")[4] %>
+            <br>
+            <%= chat.created_at.toString().split(" ").slice(0, 4).join("-") %>
+          <% } %>
+          
+        </div></div>
+      </div>
+    <% } %>
+  </div>
+</body>
+</html>
