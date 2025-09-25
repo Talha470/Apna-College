@@ -28,7 +28,7 @@ const check = ((req, res, next) => {
 
 //In this case when error occur it ll display invalid status code because the error-handling-middle-ware
 //extracting status ,messege from err and sending it
-app.use(("/err"), (req, res) => {
+app.use(("/err"),check, (req, res) => {
   abcd =abcd;
 })
 
