@@ -82,7 +82,7 @@ app.get("/listings", wrapAsync( async(req,res) =>  {
 app.get("/listings/new",  async(req,res) => {
 res.render("listings/new")
 })
-app.post("/listings/" ,joivalidate, wrapAsync ( async(req, res, next) => {
+app.post("/listings/" , wrapAsync ( async(req, res, next) => {
   //if(!req.body.listing){
   //  throw new expressError(400, "Send Valid data");
   //}
@@ -129,8 +129,12 @@ app.use((req, res, next) => {
   next(new expressError(404, "Page not found!"));
 });
 
-
 //middleware
+app.use((err, req, res,next) => {
+  console.log(err.name);
+  next(err);
+} )
+
 app.use((err, req, res, next) => {
   let{status= 500, message="Something went wrong!"} = err;
 res.status(status).render("error.ejs", {message});

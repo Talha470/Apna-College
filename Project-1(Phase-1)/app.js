@@ -27,10 +27,13 @@ app.engine('ejs', ejsMate);
 //check file joiSchema.js
 const joischema = require("./joiSchema.js");
 //iska hm middleware bhi bana kr use kr skte hain 
-const joivalidate = (req, res, next)=>{
-  let result = joischema.validate(req.body);
-  if(result.error){
-    throw new expressError(400, result.error);
+const joinValidate = (req, res, next)=>{
+  // if(!req.body){
+  //       throw new expressError(400, "Please Fill All Feilds");
+  // }
+  let {error} = joischema.validate(req.body);
+  if(error){
+    throw new expressError(400, error.message);
   }
   else{
  return next();  
@@ -79,30 +82,21 @@ app.get("/listings", wrapAsync( async(req,res) =>  {
 
 
 //insert route
-app.get("/listings/new",  async(req,res) => {
+app.get("/listings/new",  (req,res) => {
 res.render("listings/new")
 })
-app.post("/listings/" ,joivalidate, wrapAsync ( async(req, res, next) => {
-  //if(!req.body.listing){
-  //  throw new expressError(400, "Send Valid data");
-  //}
-  //let result = joischema.validate(req.body);
-  //if(result.error){
-  //  throw new expressError(400, result.error);
-  //}
-    let listing = req.body;
-    const newlisting = new Listing(req.body.listing);
-    await newlisting.save()
-    res.redirect(`/listings`);
-  }))
-
+app.post("/listings/",joinValidate, wrapAsync(async (req, res, next) => {
+  const newlisting = new Listing(req.body.listing);
+  await newlisting.save();
+  res.redirect(`/listings`);
+}));
 //edit route
 app.get("/listings/:id/edit", wrapAsync( async(req,res) => {
   let {id} = req.params;
   const listing = await Listing.findById(id);
 res.render("listings/edit" , {listing})
 }))
-app.put("/listings/:id" ,wrapAsync( async(req, res) => {
+app.put("/listings/:id" ,joinValidate ,wrapAsync( async(req, res) => {
   let {id} = req.params;
   await Listing.findByIdAndUpdate(id, {...req.body.listing})
   res.redirect(`/listings/${id}`);
@@ -117,11 +111,11 @@ app.delete("/listings/:id", wrapAsync( async (req, res) => {
 }));
 
 //show route
-app.get("/listings/:id", async(req, res) => {
+app.get("/listings/:id", wrapAsync( async(req, res) => {
   let {id} = req.params;
   const listing = await Listing.findById(id);
   res.render("listings/show" , {listing})
-  })
+  }))
 
 
   //Other pages responses
@@ -132,7 +126,25 @@ app.use((req, res, next) => {
 
 //middleware
 app.use((err, req, res, next) => {
-  let{status= 500, message="Something went wrong!"} = err;
-res.status(status).render("error.ejs", {message});
-  //res.status(status).send(message);
-})
+const { status = 500, message = "Something went wrong!" } = err;
+  res.status(status).json({ success: false, message });
+});
+
+
+
+
+  // const acceptsJSON =
+  //   req.xhr ||
+  //   req.headers.accept?.includes("application/json") ||
+  //   req.headers["content-type"] === "application/json" ||
+  //   req.originalUrl.startsWith("/api");
+
+  // if (acceptsJSON) {
+  //   return res.status(status).json({
+  //     success: false,
+  //     status,
+  //     message,
+  //   });
+  // }
+
+  // res.status(status).render("error.ejs", { message });

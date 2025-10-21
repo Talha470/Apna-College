@@ -39,17 +39,29 @@ app.listen(8080, () => {
 })
 
 
+//async wrap
+function asyncWrap(fn){
+  return function(req, res, next){
+        fn(req, res, next).catch(err => next(err));
+  }
+}
+
+
 //Index Route
 app.get("/chats" , async (req, res) => {
-   let  chats = await Chat.find();
+  try{let  chats = await Chat.find();
    console.log(chats);
-   res.render("index", {chats});
+   res.render("index", {chats});}
+   catch(err){
+    next(err);
+   }
+   
 })
 
 //New Chat 
 app.get("/chats/new", (req, res) => {
+  // throw new expressError(404, "Forbiden");
   res.render("new")
-  //throw new expressError(404, "Forbiden");
 })
 
 app.post("/chats", async(req, res, next) => {
@@ -61,7 +73,11 @@ try{
     msg : msg,
     created_at : new Date()
   });
+    if (!from || !to || !msg) {
+      throw new expressError(400, "All fields (from, to, msg) are required");
+    }
   await newChat.save();
+ 
   res.redirect("/chats");
 
 }catch(err){
@@ -69,32 +85,36 @@ try{
 }
 })
 
-//async wrap
-function asyncWrap(fn){
-  return function(req, res, next){
-        fn(req, res, next).catch(err => next(err));
-  }
-}
 
 //Show Route
 app.get("/chats/:id", asyncWrap( async(req, res, next) => {
   const {id} = req.params;
   let chat = await Chat.findById(id);
   if(!chat){
-    next(new expressError(404, "Page not Found"));
+    next(new expressError(404, "Chat not Found"));
     }
   res.render("edit", {chat}); 
 }))
 
 //Edit Chat
-app.get("/chats/:id/edit", async (req, res) => {
-  let {id} = req.params;
-  let {chat} = await Chat.findById(id);
-  res.render("edit", {chat});
-})
+app.get("/chats/:id/edit", async (req, res, next) => {
+  try {
+    let { id } = req.params;
+    let chat = await Chat.findById(id);
+    if (!chat) {
+      throw new expressError(404, "Chat not Found");
+    }
 
-app.put("/chats/:id/edit", async (req, res) => {
-  let {id} = req.params;
+    res.render("edit", { chat });
+
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put("/chats/:id/edit", async (req, res,next) => {
+  try{
+ let {id} = req.params;
   let {from, to, msg} = req.body;
   let edited = await Chat.findByIdAndUpdate(id, {
     from,
@@ -102,16 +122,31 @@ app.put("/chats/:id/edit", async (req, res) => {
     msg,
     updated_at : new Date()
   })
+      if (!edited) {
+      // Agar id galat hui ya record nahi mila
+      throw new expressError(404, "Chat not Found for Editing");
+    }
   res.redirect("/chats");
+  }catch(err){next(err);}
+ 
 })
 
 
 //delete chat
-app.delete("/chats/:id/delete", async (req, res) => {
-  let {id} = req.params;
-  let del = await Chat.findByIdAndDelete(id);
-  res.redirect("/chats");
-})
+app.delete("/chats/:id/delete", async (req, res, next) => {
+  try {
+    let { id } = req.params;
+    let del = await Chat.findByIdAndDelete(id);
+
+    if (!del) {
+      throw new expressError(404, "Chat not found or already deleted");
+    }
+
+    res.redirect("/chats");
+  } catch (err) {
+    next(err);
+  }
+});
 
 //defining error and checking to non async route 
 //We throw error from chats/new
@@ -123,12 +158,23 @@ app.delete("/chats/:id/delete", async (req, res) => {
 
 
 //this is part for for mongoose in which we are defininf error
+// Helper function
+const handleValidationError = (err) => {
+  console.log("This is a Validation Error. Please follow rules!");
+  console.dir(err);
+  return err;
+};
 app.use((err, req, res, next) => {
-  console.log(err.name);
+ if (err.name === "ValidationError") {
+  err = handleValidationError(err);
+}
   next(err);
-})
+});
 
 app.use((err, req, res, next) => {
   let {status = 500, message = "Some Error is Occured"} = err;
-  res.status(status).send(message);
+res.status(status).json({
+    status,
+    message
+  });
 })
